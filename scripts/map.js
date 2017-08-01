@@ -18,7 +18,7 @@ function initialize() {
       container: "viewDiv",
       map: map,
       center: [-111.649278, 40.249251],
-      zoom: 16.5
+      zoom: 16
     });
 
     // featureLayer.then(function() {
@@ -42,13 +42,16 @@ function initialize() {
 
 function removeLayers() {
   console.log("removing layers");
-  map.removeAll();
-  if (layerList) {
+  if (layerList != null) {
     layerList.destroy();
+    layerList = null;
   }
-  if (legend) {
+  if (legend != null) {
     legend.destroy();
+    legend = null;
   }
+  map.removeAll();
+
   featureLayerIDSet = [];
   // map.removeMany(featureLayerIDSet);
   // for(i=0; i<featureLayerIDSet.length; i++){
@@ -63,11 +66,8 @@ function toggleLayers(id) {
   }
   require([
     "esri/layers/FeatureLayer",
-    "esri/widgets/Legend",
-    "esri/tasks/QueryTask",
-    "esri/tasks/support/Query",
     "dojo/domReady!"
-  ], function(FeatureLayer, Legend, QueryTask, Query) {
+  ], function(FeatureLayer) {
     //load ParkingLayers
     var template = {
       title: "{Name}",
@@ -80,33 +80,80 @@ function toggleLayers(id) {
     });
     map.add(featureLayer);
     //console.log(featureLayer.outFields[1]);
-    // console.log(featureLayer.layerId);
     featureLayerIDSet.push(featureLayer.id);
-    //add layer list
-    // layerList = new LayerList({
-    //   view: view
-    // });
-    // view.ui.add(layerList, {
-    //   position: "top-left"
-    // });
+    var graphics;
+    var listNode = document.getElementById("listNode");
+    view.whenLayerView(featureLayer).then(function(lyrView) {
+      lyrView.watch("updating", function(val) {
+        if (!val) { // wait for the layer view to finish updating
+
+          // query all the features available for drawing.
+          lyrView.queryFeatures().then(function(results) {
+
+            graphics = results;
+
+            var fragment = document.createDocumentFragment();
+
+            results.forEach(function(result, index) {
+              var attributes = result.attributes;
+              var name = attributes.Name;
+              var Description = attributes.Description;
+
+              // Create a list zip codes in NY
+              var li = document.createElement("li");
+              li.classList.add("panel-result");
+              li.tabIndex = 0;
+              li.setAttribute("data-result-id", index);
+              li.textContent = name;
+
+              fragment.appendChild(li);
+            });
+            // Empty the current list
+            listNode.innerHTML = "";
+            listNode.appendChild(fragment);
+          });
+        }
+      });
+    });
+    listNode.addEventListener("click", onListClickHandler);
+
+    function onListClickHandler(event) {
+      var target = event.target;
+      var resultId = target.getAttribute("data-result-id");
+
+      // get the graphic corresponding to the clicked zip code
+      var result = resultId && graphics && graphics[parseInt(resultId,
+        10)];
+
+      if (result) {
+        // open the popup at the centroid of zip code polygon
+        // and set the popup's features which will populate popup content and title.
+        view.popup.open({
+          features: [result],
+          location: result.geometry.centroid
+        });
+      }
+    }
     // var queryTask = new QueryTask({
     //   url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
     // });
     // var query = new Query();
-    // query.outFields = ["Name", "Description"];
-    // queryTask.execute(query).then(function(result) {
-    //   console.log(result);
+    // query.where = "Name ='Jamba Juice'";
+    // query.outFields = ["Name"];
+    // queryTask.execute(query).then(function(result){
+    // console.log(result);
+    //   // console.log(result.features[0].attributes.Name);
     //   // Do something with the resulting FeatureSet (zoom to it, highlight features, get other attributes, etc)
     // }, function(error) {
     //   console.log(error); // Will print error in console if unsupported layers are used
     // });
-    legend = new Legend({
-      view: view,
-      layerInfos: [{
-        layer: featureLayer
-      }]
-    });
-    view.ui.add(legend, "top-left");
+    // legend = new Legend({
+    //   view: view,
+    //   layerInfos: [{
+    //     layer: featureLayer
+    //   }]
+    // });
+    // view.ui.add(legend, "top-left");
   });
 }
 
@@ -132,7 +179,7 @@ function toggleBuildings() {
     console.log(featureLayer.outfields);
     map.add(featureLayer);
     // console.log(featureLayer.layerId);
-    featureLayerIDSet.push(featureLayer.id);
+    // featureLayerIDSet.push(featureLayer.id);
     // layerList = new LayerList({
     //   view: view
     // });
@@ -143,7 +190,6 @@ function toggleBuildings() {
 }
 
 function toggleParkingLots() {
-  // var FeatureLayer
   if (map.findLayerById(featureLayerIDSet[0])) {
     removeLayers();
   }
@@ -159,7 +205,7 @@ function toggleParkingLots() {
     };
     for (var i = 2; i < 12; i++) {
       var featureLayer = new FeatureLayer({
-        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/ParkingLayers/FeatureServer/" + i + "?token=APA1OuNrjUpayDvpJS82zrdBBlWr1q6dVqbC3Igx8fBnNR_D4efGRGsy8nNEIOvvSTLV4yox6V4COhG7kZTpxRZeBHgv-sZe_thgde7E1LxGmTPpwQBFFA6J3hxcvevmRcSuWnkCChstKnI2wkFHlwSZLwIqbzDsvj3ei1TqIEb-QVdD5uLXu-nDQ_-VZspIpL92LRad5fX_8CbI1g0Ibg..",
+        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/ParkingLayers/FeatureServer/" + i,
         outFields: ["Lot", "Description"],
         popupTemplate: template
       });
@@ -167,18 +213,49 @@ function toggleParkingLots() {
       // console.log(featureLayer.layerId);
       featureLayerIDSet.push(featureLayer.id);
     }
-    var featureLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BicycleParking/FeatureServer/0",
-    });
-    map.add(featureLayer);
-    featureLayerIDSet.push(featureLayer.id);
-    console.log(featureLayerIDSet);
-
     layerList = new LayerList({
       view: view
     });
     view.ui.add(layerList, {
       position: "top-left"
     });
+  });
+}
+
+function toggleTransportation() {
+  if (map.findLayerById(featureLayerIDSet[0])) {
+    removeLayers();
+  }
+  require([
+    "esri/layers/FeatureLayer",
+    "esri/widgets/Legend",
+    "dojo/domReady!"
+  ], function(FeatureLayer, Legend) {
+    var template = {
+      title: "{BusName}",
+      content: "{Description}"
+    };
+    //add bus routes
+    var featureLayer = new FeatureLayer({
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BusStops/FeatureServer/0",
+      outFields: ["BusName", "StopLocation", "Description"],
+      popupTemplate: template
+    });
+    map.add(featureLayer);
+    featureLayerIDSet.push(featureLayer.id);
+    //add bycicle ParkingLayers
+    var bikeLayer = new FeatureLayer({
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BicycleParking/FeatureServer/0"
+    });
+    map.add(bikeLayer);
+    featureLayerIDSet.push(bikeLayer.id);
+    legend = new Legend({
+      view: view,
+      layerInfos: [{
+        layer: featureLayer,
+        bikeLayer
+      }]
+    });
+    view.ui.add(legend, "top-left");
   });
 }
