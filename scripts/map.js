@@ -3,6 +3,7 @@ var featureLayerIDSet = [];
 
 function initialize() {
   //load the basemap
+  //change test
   require([
     "esri/Map",
     "esri/views/MapView",
