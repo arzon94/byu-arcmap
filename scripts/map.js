@@ -20,7 +20,6 @@ function initialize() {
       center: [-111.649278, 40.249251],
       zoom: 16
     });
-
     // featureLayer.then(function() {
     //     console.log("featureLayer LOADED");
     //   },
@@ -30,7 +29,6 @@ function initialize() {
     //   });
     view.then(function() {
         toggleBuildings();
-        console.log("view LOADED");
       },
       function(error) {
         // Use the errback function to handle when the view doesn't load properly
@@ -40,24 +38,7 @@ function initialize() {
   });
 }
 
-function removeLayers() {
-  console.log("removing layers");
-  if (layerList != null) {
-    layerList.destroy();
-    layerList = null;
-  }
-  if (legend != null) {
-    legend.destroy();
-    legend = null;
-  }
-  map.removeAll();
 
-  featureLayerIDSet = [];
-  // map.removeMany(featureLayerIDSet);
-  // for(i=0; i<featureLayerIDSet.length; i++){
-  //   map.remove(featureLayerIDSet[i]);
-  // }
-}
 
 function toggleLayers(id) {
   var id = id;
@@ -66,8 +47,9 @@ function toggleLayers(id) {
   }
   require([
     "esri/layers/FeatureLayer",
+    "esri/tasks/support/Query",
     "dojo/domReady!"
-  ], function(FeatureLayer) {
+  ], function(FeatureLayer, Query) {
     //load ParkingLayers
     var template = {
       title: "{Name}",
@@ -75,28 +57,44 @@ function toggleLayers(id) {
     };
     var featureLayer = new FeatureLayer({
       url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-      outFields: ["Name", "Description"],
+      //outFields: ["Name", "Description", "BLDG_ABBR", "BLDG_NAME"],
+      outFields: ["*"],
+      definitionExpression: "Name != ''",
       popupTemplate: template
     });
     map.add(featureLayer);
-    //console.log(featureLayer.outFields[1]);
+    featureLayer.then(function() {
+      if (featureLayer.capabilities.queryRelated.supportsOrderBy) {
+        console.log("order supported");
+        //console.log(featureLayer);
+      } else {
+        console.log("order NOT supported");
+      }
+    });
+
     featureLayerIDSet.push(featureLayer.id);
     var graphics;
     var listNode = document.getElementById("listNode");
     view.whenLayerView(featureLayer).then(function(lyrView) {
       lyrView.watch("updating", function(val) {
         if (!val) { // wait for the layer view to finish updating
-
+          var queryParams = featureLayer.createQuery();
+          queryParams.orderByFields = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? ["BLDG_NAME"]:["Name"];
           // query all the features available for drawing.
-          lyrView.queryFeatures().then(function(results) {
-
-            graphics = results;
+          featureLayer.queryFeatures(queryParams).then(function(results) {
+            console.log(results.features);
+            graphics = results.features;
 
             var fragment = document.createDocumentFragment();
 
-            results.forEach(function(result, index) {
+            results.features.forEach(function(result, index) {
               var attributes = result.attributes;
-              var name = attributes.Name;
+              var name;
+              if (attributes.BLDG_ABBR != null) {
+                name = attributes.Name + " (" + attributes.BLDG_ABBR + ")";
+              } else {
+                name = attributes.Name;
+              }
               var Description = attributes.Description;
 
               // Create a list zip codes in NY
@@ -111,6 +109,8 @@ function toggleLayers(id) {
             // Empty the current list
             listNode.innerHTML = "";
             listNode.appendChild(fragment);
+          }, function(error) {
+            console.log("something query messed up", error);
           });
         }
       });
@@ -176,16 +176,10 @@ function toggleBuildings() {
       popupTemplate: template,
       opacity: 0
     });
-    console.log(featureLayer.outfields);
+    //console.log(featureLayer.outfields);
     map.add(featureLayer);
     // console.log(featureLayer.layerId);
     // featureLayerIDSet.push(featureLayer.id);
-    // layerList = new LayerList({
-    //   view: view
-    // });
-    // view.ui.add(layerList, {
-    //   position: "top-left"
-    // });
   });
 }
 
@@ -258,4 +252,22 @@ function toggleTransportation() {
     });
     view.ui.add(legend, "top-left");
   });
+}
+
+function removeLayers() {
+  console.log("removing layers");
+  if (layerList != null) {
+    layerList.destroy();
+    layerList = null;
+  }
+  if (legend != null) {
+    legend.destroy();
+    legend = null;
+  }
+  map.removeAll();
+  featureLayerIDSet = [];
+  // map.removeMany(featureLayerIDSet);
+  // for(i=0; i<featureLayerIDSet.length; i++){
+  //   map.remove(featureLayerIDSet[i]);
+  // }
 }
