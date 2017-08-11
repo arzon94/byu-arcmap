@@ -89,17 +89,17 @@ function toggleLayers(id) {
     // view.ui.add(layerList, {
     //   position: "top-left"
     // });
-    // var queryTask = new QueryTask({
-    //   url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-    // });
-    // var query = new Query();
-    // query.outFields = ["Name", "Description"];
-    // queryTask.execute(query).then(function(result) {
-    //   console.log(result);
-    //   // Do something with the resulting FeatureSet (zoom to it, highlight features, get other attributes, etc)
-    // }, function(error) {
-    //   console.log(error); // Will print error in console if unsupported layers are used
-    // });
+    var queryTask = new QueryTask({
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
+    });
+    var query = new Query();
+    query.outFields = ["Name", "Description"];
+    queryTask.execute(query).then(function(result) {
+      console.log(result);
+      // Do something with the resulting FeatureSet (zoom to it, highlight features, get other attributes, etc)
+    }, function(error) {
+      console.log(error); // Will print error in console if unsupported layers are used
+    });
     legend = new Legend({
       view: view,
       layerInfos: [{
