@@ -74,6 +74,33 @@ function toggleLayers(id) {
     });
 
     featureLayerIDSet.push(featureLayer.id);
+<<<<<<< HEAD
+    //add layer list
+    // layerList = new LayerList({
+    //   view: view
+    // });
+    // view.ui.add(layerList, {
+    //   position: "top-left"
+    // });
+    var queryTask = new QueryTask({
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
+    });
+    var query = new Query();
+    query.outFields = ["Name", "Description"];
+    queryTask.execute(query).then(function(result) {
+      console.log(result);
+      // Do something with the resulting FeatureSet (zoom to it, highlight features, get other attributes, etc)
+    }, function(error) {
+      console.log(error); // Will print error in console if unsupported layers are used
+    });
+    legend = new Legend({
+      view: view,
+      layerInfos: [{
+        layer: featureLayer
+      }]
+    });
+    view.ui.add(legend, "top-left");
+=======
     var graphics;
     var listNode = document.getElementById("listNode");
     view.whenLayerView(featureLayer).then(function(lyrView) {
@@ -213,6 +240,7 @@ function toggleLayers(id) {
     //   }]
     // });
     // view.ui.add(legend, "top-left");
+>>>>>>> origin/master
   });
 }
 
