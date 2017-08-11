@@ -3,6 +3,7 @@ var featureLayerIDSet = [];
 
 function initialize() {
   //load the basemap
+  //change test
   require([
     "esri/Map",
     "esri/views/MapView",
@@ -130,7 +131,6 @@ function toggleLayers(id) {
               li.tabIndex = 0;
               li.setAttribute("data-result-id", index);
               li.textContent = name;
-
               fragment.appendChild(li);
             });
             // Empty the current list
@@ -155,12 +155,71 @@ function toggleLayers(id) {
       if (result) {
         // open the popup at the centroid of zip code polygon
         // and set the popup's features which will populate popup content and title.
+        var
         view.popup.open({
           features: [result],
-          location: result.geometry.centroid
+          location: featureLayer.
         });
       }
     }
+
+
+    // var graphics;
+    // var listNode = document.getElementById("listNode");
+    //
+    //    view.whenLayerView(featureLayer).then(function(lyrView) {
+    //      lyrView.watch("updating", function(val) {
+    //        if (!val) { // wait for the layer view to finish updating
+    //
+    //          // query all the features available for drawing.
+    //          lyrView.queryFeatures().then(function(results) {
+    //
+    //            graphics = results;
+    //
+    //            var fragment = document.createDocumentFragment();
+    //
+    //            results.forEach(function(result, index) {
+    //              var attributes = result.attributes;
+    //              var name = attributes.Name + " (" +
+    //                attributes.BLDG_ABBR + ")"
+    //
+    //              // Create a list zip codes in NY
+    //              var li = document.createElement("li");
+    //              li.classList.add("panel-result");
+    //              li.tabIndex = 0;
+    //              li.setAttribute("data-result-id", index);
+    //              li.textContent = name;
+    //
+    //              fragment.appendChild(li);
+    //            });
+    //            // Empty the current list
+    //            listNode.innerHTML = "";
+    //            listNode.appendChild(fragment);
+    //          });
+    //        }
+    //      });
+    //    });
+    //
+    //    // listen to click event on the zip code list
+    //    listNode.addEventListener("click", onListClickHandler);
+    //
+    //    function onListClickHandler(event) {
+    //      var target = event.target;
+    //      var resultId = target.getAttribute("data-result-id");
+    //
+    //      // get the graphic corresponding to the clicked zip code
+    //      var result = resultId && graphics && graphics[parseInt(resultId,
+    //        10)];
+    //
+    //      if (result) {
+    //        // open the popup at the centroid of zip code polygon
+    //        // and set the popup's features which will populate popup content and title.
+    //        view.popup.open({
+    //          features: [result],
+    //          location: result.geometry.centroid
+    //        });
+    //      }
+    //    }
     // var queryTask = new QueryTask({
     //   url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
     // });
