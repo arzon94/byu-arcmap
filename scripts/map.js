@@ -7,13 +7,16 @@ function initialize() {
   require([
     "esri/Map",
     "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "esri/widgets/Search",
     "dojo/domReady!"
-  ], function(Map, MapView) {
+  ], function(Map, MapView, FeatureLayer, Search) {
     map = new Map({
       // portalItem: { // autocasts as new PortalItem()
       //   id: "e497a8874fa846aa971725238d6de2cd"
       // }
-      basemap: "streets"
+      //  Unable to find basemap definition for: dark-grays. Try one of these: "streets", "satellite", "hybrid", "terrain", "topo", "gray", "dark-gray", "oceans", "national-geographic", "osm", "dark-gray-vector", "gray-vector", "streets-vector", "topo-vector", "streets-night-vector", "streets-relief-vector", "streets-navigation-vector"
+      basemap: "streets-relief-vector"
     });
     view = new MapView({
       container: "viewDiv",
@@ -21,25 +24,93 @@ function initialize() {
       center: [-111.649278, 40.249251],
       zoom: 16
     });
-    // featureLayer.then(function() {
-    //     console.log("featureLayer LOADED");
-    //   },
-    //   function(error) {
-    //     // Use the errback function to handle when the view doesn't load properly
-    //     console.error('The featureLayer\'s resources failed to load: ', error);
-    //   });
     view.then(function() {
         toggleBuildings();
+        var template = {
+          title: "{Name}",
+          content: "{Description}",
+          overwriteActions: true
+        };
+        var searchWidget = new Search({
+          view: view,
+          allPlaceholder: "Building Name or Acronym",
+          sources: [{
+              featureLayer: new FeatureLayer({
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYUBuildings/FeatureServer/0",
+                popupTemplate: template
+              }),
+              searchFields: ["Name", "BLDG_ABBR"],
+              suggestionTemplate: "{Name} ({BLDG_ABBR})",
+              displayField: "Name",
+              exactMatch: false,
+              outFields: ["Name", "BLDG_ABBR", "Description"],
+              name: "Buildings",
+              placeholder: "example: JSB",
+            }, {
+              featureLayer: new FeatureLayer({
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Athletics/FeatureServer/0",
+                popupTemplate: template
+              }),
+              searchFields: ["Name", "BLDG_ABBR"],
+              suggestionTemplate: "{Name}",
+              exactMatch: false,
+              outFields: ["*"],
+              name: "Sports",
+              placeholder: "example: Marriott Center",
+            },
+            {
+              featureLayer: new FeatureLayer({
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Services/FeatureServer/0",
+                popupTemplate: template
+              }),
+              searchFields: ["Name"],
+              suggestionTemplate: "{Name}",
+              exactMatch: false,
+              outFields: ["*"],
+              name: "Services",
+              placeholder: "example: Admissions",
+            }, {
+              featureLayer: new FeatureLayer({
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/StudentServices/FeatureServer/0",
+                popupTemplate: template
+              }),
+              searchFields: ["Name"],
+              suggestionTemplate: "{Name}",
+              exactMatch: false,
+              outFields: ["*"],
+              name: "Student Services",
+              placeholder: "example: Title IX",
+            }, {
+              featureLayer: new FeatureLayer({
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Entertainment_Museums/FeatureServer/0",
+                popupTemplate: template
+              }),
+              searchFields: ["Name"],
+              suggestionTemplate: "{Name}",
+              exactMatch: false,
+              outFields: ["*"],
+              name: "Entertainment and Museums",
+              placeholder: "example: Planetarium",
+            }
+          ]
+        });
+        view.ui.add(searchWidget, {
+          position: "top-left",
+          index: 2
+        });
+        searchWidget.then(function() {
+
+        }, function(error) {
+          console.log('search failed', error);
+        });
+
       },
       function(error) {
         // Use the errback function to handle when the view doesn't load properly
         console.log('The view\'s resources failed to load: ', error);
       });
-
   });
 }
-
-
 
 function toggleLayers(id) {
   var id = id;
@@ -79,16 +150,26 @@ function toggleLayers(id) {
     view.whenLayerView(featureLayer).then(function(lyrView) {
       lyrView.watch("updating", function(val) {
         if (!val) { // wait for the layer view to finish updating
-          var queryParams = featureLayer.createQuery();
-          queryParams.orderByFields = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? ["BLDG_NAME"]:["Name"];
+          //console.log(lyrView);
+          //var queryParams = featureLayer.createQuery();
+          //queryParams.orderByFields = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? ["BLDG_NAME"] : ["Name"];
           // query all the features available for drawing.
-          featureLayer.queryFeatures(queryParams).then(function(results) {
-            console.log(results.features);
-            graphics = results.features;
-
+          lyrView.queryFeatures().then(function(results) {
+            console.log(results);
+            results.sort(function(a, b) {
+              if (a.attributes.BLDG_NAME > b.attributes.BLDG_NAME) {
+                return 1;
+              } else if (a.attributes.BLDG_NAME < b.attributes.BLDG_NAME) {
+                return -1;
+              } else {
+                return 0;
+              }
+            });
+            graphics = results;
+            document.getElementsByClassName("panel-side")[0].style.zIndex = "1";
             var fragment = document.createDocumentFragment();
 
-            results.features.forEach(function(result, index) {
+            results.forEach(function(result, index) {
               var attributes = result.attributes;
               var name;
               if (attributes.BLDG_ABBR != null) {
@@ -126,73 +207,18 @@ function toggleLayers(id) {
         10)];
 
       if (result) {
+        var centerPoint = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? result.geometry.centroid : {
+          latitude: result.geometry.latitude,
+          longitude: result.geometry.longitude
+        };
         // open the popup at the centroid of zip code polygon
         // and set the popup's features which will populate popup content and title.
-        var
         view.popup.open({
           features: [result],
-          location: featureLayer.
+          location: centerPoint
         });
       }
     }
-
-
-    // var graphics;
-    // var listNode = document.getElementById("listNode");
-    //
-    //    view.whenLayerView(featureLayer).then(function(lyrView) {
-    //      lyrView.watch("updating", function(val) {
-    //        if (!val) { // wait for the layer view to finish updating
-    //
-    //          // query all the features available for drawing.
-    //          lyrView.queryFeatures().then(function(results) {
-    //
-    //            graphics = results;
-    //
-    //            var fragment = document.createDocumentFragment();
-    //
-    //            results.forEach(function(result, index) {
-    //              var attributes = result.attributes;
-    //              var name = attributes.Name + " (" +
-    //                attributes.BLDG_ABBR + ")"
-    //
-    //              // Create a list zip codes in NY
-    //              var li = document.createElement("li");
-    //              li.classList.add("panel-result");
-    //              li.tabIndex = 0;
-    //              li.setAttribute("data-result-id", index);
-    //              li.textContent = name;
-    //
-    //              fragment.appendChild(li);
-    //            });
-    //            // Empty the current list
-    //            listNode.innerHTML = "";
-    //            listNode.appendChild(fragment);
-    //          });
-    //        }
-    //      });
-    //    });
-    //
-    //    // listen to click event on the zip code list
-    //    listNode.addEventListener("click", onListClickHandler);
-    //
-    //    function onListClickHandler(event) {
-    //      var target = event.target;
-    //      var resultId = target.getAttribute("data-result-id");
-    //
-    //      // get the graphic corresponding to the clicked zip code
-    //      var result = resultId && graphics && graphics[parseInt(resultId,
-    //        10)];
-    //
-    //      if (result) {
-    //        // open the popup at the centroid of zip code polygon
-    //        // and set the popup's features which will populate popup content and title.
-    //        view.popup.open({
-    //          features: [result],
-    //          location: result.geometry.centroid
-    //        });
-    //      }
-    //    }
     // var queryTask = new QueryTask({
     //   url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
     // });
@@ -214,6 +240,44 @@ function toggleLayers(id) {
     // });
     // view.ui.add(legend, "top-left");
   });
+}
+
+function toggleLegendLayers(id) {
+  var id = id;
+  if (map.findLayerById(featureLayerIDSet[0])) {
+    removeLayers();
+  }
+  require([
+    "esri/layers/FeatureLayer",
+    "esri/widgets/Legend",
+    "dojo/domReady"
+  ], function(FeatureLayer, Legend) {
+    var template = {
+      title: "{Name}",
+      content: "{Description}"
+    };
+    var featureLayer = new FeatureLayer({
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
+      //outFields: ["Name", "Description", "BLDG_ABBR", "BLDG_NAME"],
+      outFields: ["*"]
+    });
+    map.add(featureLayer);
+
+    featureLayer.then(function() {
+      featureLayerIDSet.push(featureLayer.id);
+      console.log(featureLayer);
+      legend = new Legend({
+        view: view,
+        layerInfos: [{
+          layer: featureLayer
+        }]
+      });
+      view.ui.add(legend, "bottom-left");
+    });
+  });
+
+
+
 }
 
 function toggleBuildings() {
@@ -315,6 +379,7 @@ function toggleTransportation() {
 
 function removeLayers() {
   console.log("removing layers");
+  document.getElementsByClassName("panel-side")[0].style.zIndex = "-1";
   if (layerList != null) {
     layerList.destroy();
     layerList = null;
