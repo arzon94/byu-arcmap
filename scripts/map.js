@@ -12,9 +12,6 @@ function initialize() {
     "dojo/domReady!"
   ], function(Map, MapView, FeatureLayer, Search) {
     map = new Map({
-      // portalItem: { // autocasts as new PortalItem()
-      //   id: "e497a8874fa846aa971725238d6de2cd"
-      // }
       //  Unable to find basemap definition for: dark-grays. Try one of these: "streets", "satellite", "hybrid", "terrain", "topo", "gray", "dark-gray", "oceans", "national-geographic", "osm", "dark-gray-vector", "gray-vector", "streets-vector", "topo-vector", "streets-night-vector", "streets-relief-vector", "streets-navigation-vector"
       basemap: "streets-relief-vector"
     });
@@ -125,7 +122,11 @@ function toggleLayers(id) {
     //load ParkingLayers
     var template = {
       title: "{Name}",
-      content: "{Description}"
+      content: [{
+        type: "text",
+        text: "{Description}  <img src='{ImageUrl}'> <a target='_blank' href='{url}'>{url}</a>"
+      }]
+
     };
     var featureLayer = new FeatureLayer({
       url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
@@ -219,26 +220,6 @@ function toggleLayers(id) {
         });
       }
     }
-    // var queryTask = new QueryTask({
-    //   url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-    // });
-    // var query = new Query();
-    // query.where = "Name ='Jamba Juice'";
-    // query.outFields = ["Name"];
-    // queryTask.execute(query).then(function(result){
-    // console.log(result);
-    //   // console.log(result.features[0].attributes.Name);
-    //   // Do something with the resulting FeatureSet (zoom to it, highlight features, get other attributes, etc)
-    // }, function(error) {
-    //   console.log(error); // Will print error in console if unsupported layers are used
-    // });
-    // legend = new Legend({
-    //   view: view,
-    //   layerInfos: [{
-    //     layer: featureLayer
-    //   }]
-    // });
-    // view.ui.add(legend, "top-left");
   });
 }
 
@@ -256,11 +237,18 @@ function toggleLegendLayers(id) {
       title: "{Name}",
       content: "{Description}"
     };
-    var featureLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-      //outFields: ["Name", "Description", "BLDG_ABBR", "BLDG_NAME"],
-      outFields: ["*"]
-    });
+    var featureLayer;
+    if (id === "ComputerLabs_Merge") {
+      featureLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
+        outFields: ["Name", "Description"],
+        popupTemplate: template
+      });
+    } else {
+      featureLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0"
+      });
+    }
     map.add(featureLayer);
 
     featureLayer.then(function() {
@@ -302,7 +290,7 @@ function toggleBuildings() {
     //console.log(featureLayer.outfields);
     map.add(featureLayer);
     // console.log(featureLayer.layerId);
-    // featureLayerIDSet.push(featureLayer.id);
+    featureLayerIDSet.push(featureLayer.id);
   });
 }
 
@@ -323,16 +311,49 @@ function toggleParkingLots() {
     for (var i = 2; i < 12; i++) {
       var featureLayer = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/ParkingLayers/FeatureServer/" + i,
-        outFields: ["Lot", "Description"],
+        outFields: ["Lot", "Description", "Map_Category"],
         popupTemplate: template
       });
+      //console.log(featureLayer.title);
       map.add(featureLayer);
       // console.log(featureLayer.layerId);
       featureLayerIDSet.push(featureLayer.id);
     }
     layerList = new LayerList({
-      view: view
+      view: view,
+      // executes for each ListItem in the LayerList
+      listItemCreatedFunction: function(event) {
+        console.log(event);
+        var item = event.item;
+        item.title = item.title.substr(16);
+        //open the list item in the LayerList
+        // item.open = true;
+        // item.actionsSections = [
+        //   [{
+        //     title: "Show/Hide Layer",
+        //     className: "esri-icon-radio-checked",
+        //     id: "full-extent"
+        //   }]
+        // ];
+        if (item.title === "ParkingLayers - Construction") {
+          item.title = "Construction";
+        } else if (item.title === "ParkingLayers - Faculty and Staff") {
+          item.title = "Faculty and Staff";
+        } else if (item.title === "ParkingLayers - Free Parking") {
+          item.title = "Free Parking";
+        } else if (item.title === "ParkingLayers - Free Parking") {
+          item.title = "Free Parking";
+        } else if (item.title === "ParkingLayers - Free Parking") {
+          item.title = "Free Parking";
+        } else if (item.title === "ParkingLayers - Free Parking") {
+          item.title = "Free Parking";
+        } else if (item.title === "ParkingLayers - Free Parking") {
+          item.title = "Free Parking";
+        }
+      }
     });
+
+
     view.ui.add(layerList, {
       position: "top-left"
     });
@@ -375,6 +396,31 @@ function toggleTransportation() {
     });
     view.ui.add(legend, "top-left");
   });
+}
+
+function toggleAEDs() {
+  removeLayers();
+  require([
+    "esri/layers/FeatureLayer",
+    "esri/request",
+    "dojo/domReady!"
+  ], function(FeatureLayer, esriRequest) {
+    var options = {
+      responseType: 'json'
+    };
+    esriRequest("https://risk.byu.edu/ws/aedfeed.php", options).then(function(response) {
+      console.log('response', response);
+      var responseJSON = JSON.stringify(response, null, 2);
+      console.log(responseJSON);
+    }, function(error) {
+      console.log('request failed', error);
+    });
+
+    // var featureLayer = new FeatureLayer({
+    //
+    // });
+  });
+  //var json = "https://risk.byu.edu/ws/aedfeed.php"
 }
 
 function removeLayers() {
