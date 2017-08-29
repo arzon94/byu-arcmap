@@ -13,7 +13,7 @@ function initialize() {
   ], function(Map, MapView, FeatureLayer, Search) {
     map = new Map({
       //  Unable to find basemap definition for: dark-grays. Try one of these: "streets", "satellite", "hybrid", "terrain", "topo", "gray", "dark-gray", "oceans", "national-geographic", "osm", "dark-gray-vector", "gray-vector", "streets-vector", "topo-vector", "streets-night-vector", "streets-relief-vector", "streets-navigation-vector"
-      basemap: "streets-relief-vector"
+      basemap: "topo"
     });
     view = new MapView({
       container: "viewDiv",
@@ -33,7 +33,7 @@ function initialize() {
           allPlaceholder: "Building Name or Acronym",
           sources: [{
               featureLayer: new FeatureLayer({
-                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYUBuildings/FeatureServer/0",
+                url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Buildings_Edited/FeatureServer/0",
                 popupTemplate: template
               }),
               searchFields: ["Name", "BLDG_ABBR"],
@@ -167,7 +167,7 @@ function toggleLayers(id) {
               }
             });
             graphics = results;
-            document.getElementsByClassName("panel-side")[0].style.zIndex = "1";
+            //document.getElementsByClassName("panel-side")[0].style.zIndex = "1";
             var fragment = document.createDocumentFragment();
 
             results.forEach(function(result, index) {
@@ -208,7 +208,7 @@ function toggleLayers(id) {
         10)];
 
       if (result) {
-        var centerPoint = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? result.geometry.centroid : {
+        var centerPoint = (featureLayer.title == "Buildings Edited" || featureLayer.title == "Athletics") ? result.geometry.centroid : {
           latitude: result.geometry.latitude,
           longitude: result.geometry.longitude
         };
@@ -238,13 +238,14 @@ function toggleLegendLayers(id) {
       content: "{Description}"
     };
     var featureLayer;
-    if (id === "ComputerLabs_Merge") {
+    if (id === "ComputerLabs_Merge" || id==="Transportaion_Merge") {
       featureLayer = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-        outFields: ["Name", "Description"],
+        outFields: ["Name", "Description", "StopLocati"],
         popupTemplate: template
       });
-    } else {
+    }
+    else {
       featureLayer = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0"
       });
@@ -264,8 +265,6 @@ function toggleLegendLayers(id) {
     });
   });
 
-
-
 }
 
 function toggleBuildings() {
@@ -282,7 +281,7 @@ function toggleBuildings() {
       content: "{Description}"
     };
     var featureLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYUBuildings/FeatureServer/0",
+      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Buildings_Edited/FeatureServer/0",
       outFields: ["Name", "Description"],
       popupTemplate: template,
       opacity: 0
@@ -323,7 +322,7 @@ function toggleParkingLots() {
       view: view,
       // executes for each ListItem in the LayerList
       listItemCreatedFunction: function(event) {
-        console.log(event);
+        //console.log(event);
         var item = event.item;
         item.title = item.title.substr(16);
         //open the list item in the LayerList
@@ -335,21 +334,21 @@ function toggleParkingLots() {
         //     id: "full-extent"
         //   }]
         // ];
-        if (item.title === "ParkingLayers - Construction") {
-          item.title = "Construction";
-        } else if (item.title === "ParkingLayers - Faculty and Staff") {
-          item.title = "Faculty and Staff";
-        } else if (item.title === "ParkingLayers - Free Parking") {
-          item.title = "Free Parking";
-        } else if (item.title === "ParkingLayers - Free Parking") {
-          item.title = "Free Parking";
-        } else if (item.title === "ParkingLayers - Free Parking") {
-          item.title = "Free Parking";
-        } else if (item.title === "ParkingLayers - Free Parking") {
-          item.title = "Free Parking";
-        } else if (item.title === "ParkingLayers - Free Parking") {
-          item.title = "Free Parking";
-        }
+        // if (item.title === "ParkingLayers - Construction") {
+        //   item.title = "Construction";
+        // } else if (item.title === "ParkingLayers - Faculty and Staff") {
+        //   item.title = "Faculty and Staff";
+        // } else if (item.title === "ParkingLayers - Free Parking") {
+        //   item.title = "Free Parking";
+        // } else if (item.title === "ParkingLayers - Free Parking") {
+        //   item.title = "Free Parking";
+        // } else if (item.title === "ParkingLayers - Free Parking") {
+        //   item.title = "Free Parking";
+        // } else if (item.title === "ParkingLayers - Free Parking") {
+        //   item.title = "Free Parking";
+        // } else if (item.title === "ParkingLayers - Free Parking") {
+        //   item.title = "Free Parking";
+        // }
       }
     });
 
@@ -403,12 +402,24 @@ function toggleAEDs() {
   require([
     "esri/layers/FeatureLayer",
     "esri/request",
+    "esri/config",
     "dojo/domReady!"
-  ], function(FeatureLayer, esriRequest) {
+  ], function(FeatureLayer, esriRequest, esriConfig) {
+    var aedurl = "https://risk.byu.edu/ws/aedfeed.php";
+    // var xhttp = new XMLHttpRequest();
+    // xhttp.onreadystatechange = function() {
+    //   console.log(this);
+    // };
+    // xhttp.open("GET", aedurl, true);
+    // xhttp.send();
+
+    //console.log(esriConfig.request);
+    esriConfig.request.proxyUrl = aedurl;
     var options = {
-      responseType: 'json'
+      responseType: 'json',
+      useProxy: true
     };
-    esriRequest("https://risk.byu.edu/ws/aedfeed.php", options).then(function(response) {
+    esriRequest(aedurl, options).then(function(response) {
       console.log('response', response);
       var responseJSON = JSON.stringify(response, null, 2);
       console.log(responseJSON);
@@ -425,7 +436,8 @@ function toggleAEDs() {
 
 function removeLayers() {
   console.log("removing layers");
-  document.getElementsByClassName("panel-side")[0].style.zIndex = "-1";
+  document.getElementById("listNode").innerHTML = "";
+  //document.getElementsByClassName("panel-side")[0].style.zIndex = "-1";
   if (layerList != null) {
     layerList.destroy();
     layerList = null;

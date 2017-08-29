@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>BYU Campus Map</title>
   <link type="text/css" rel="stylesheet" href="//cloud.typography.com/75214/6517752/css/fonts.css" media="all" />
   <link rel="stylesheet" href="https://cdn.byu.edu/byu-theme-components/latest/byu-theme-components.min.css" />
@@ -19,18 +19,19 @@
   <div id="wrapper">
     <byu-header>
       <span slot="site-title">Campus Map</span>
+
       <!-- <byu-search slot="search" onsearch="submitSearch">
             <input type="search" placeholder="Search" id="searchText">
             <button id="searchButton"></button>
         </byu-search> -->
       <byu-menu slot="nav" id="menu_nav">
-        <a href="#" id="BYUBuildings" onclick="toggleLayers(this.id)">Buildings</a>
+        <a href="#" id="Buildings_Edited" onclick="toggleLayers(this.id)">Buildings</a>
         <a href="#" id="ParkingLayers" onclick="toggleParkingLots()">Parking</a>
         <a href="#" id="Dining" onclick="toggleLayers(this.id)">Dining</a>
         <a href="#" id="Athletics" onclick="toggleLayers(this.id)">Sports</a>
         <a href="#" id="Services" onclick="toggleLayers(this.id)">Services</a>
         <a href="#" id="StudentServices" onclick="toggleLayers(this.id)">Student Services</a>
-        <a href="#" id="Transportation" onclick="toggleTransportation()">Transportation</a>
+        <a href="#" id="Transportation_Merge" onclick="toggleLegendLayers(this.id)">Transportation</a>
         <a href="#" id="Entertainment_Museums" onclick="toggleLayers(this.id)">Entertainment and Museums</a>
         <a href="#" id="AccessibilityRoutes" onclick="toggleLegendLayers(this.id)">Accessibility Routes</a>
         <a href="#" id="ComputerLabs_Merge" onclick="toggleLegendLayers(this.id)">Computers and Printers</a>
