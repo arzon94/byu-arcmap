@@ -30,7 +30,7 @@ function initialize() {
         };
         var searchWidget = new Search({
           view: view,
-          allPlaceholder: "Building Name or Acronym",
+          allPlaceholder: "Enter Name or Acronym",
           sources: [{
               featureLayer: new FeatureLayer({
                 url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Buildings_Edited/FeatureServer/0",
@@ -95,6 +95,8 @@ function initialize() {
           position: "top-left",
           index: 2
         });
+        view.ui.move( "zoom", "top-left");
+        view.popup.dockEnabled = false;
         searchWidget.then(function() {
 
         }, function(error) {
@@ -124,7 +126,7 @@ function toggleLayers(id) {
       title: "{Name}",
       content: [{
         type: "text",
-        text: "{Description}  <img src='{ImageUrl}'> <a target='_blank' href='{url}'>{url}</a>"
+        text: "<div class='popupText'>{Description}</div>  <img src='{ImageUrl}'> <a target='_blank' href='{url}'>{url}</a>"
       }]
 
     };
@@ -156,7 +158,7 @@ function toggleLayers(id) {
           //queryParams.orderByFields = (featureLayer.title == "BYUBuildings" || featureLayer.title == "Athletics") ? ["BLDG_NAME"] : ["Name"];
           // query all the features available for drawing.
           lyrView.queryFeatures().then(function(results) {
-            console.log(results);
+            //console.log(results);
             results.sort(function(a, b) {
               if (a.attributes.BLDG_NAME > b.attributes.BLDG_NAME) {
                 return 1;
@@ -235,7 +237,7 @@ function toggleLegendLayers(id) {
   ], function(FeatureLayer, Legend) {
     var template = {
       title: "{Name}",
-      content: "{Description}"
+      content: "{Description} {StopLocati}"
     };
     var featureLayer;
     if (id === "ComputerLabs_Merge" || id==="Transportaion_Merge") {
@@ -354,46 +356,8 @@ function toggleParkingLots() {
 
 
     view.ui.add(layerList, {
-      position: "top-left"
+      position: "bottom-left"
     });
-  });
-}
-
-function toggleTransportation() {
-  if (map.findLayerById(featureLayerIDSet[0])) {
-    removeLayers();
-  }
-  require([
-    "esri/layers/FeatureLayer",
-    "esri/widgets/Legend",
-    "dojo/domReady!"
-  ], function(FeatureLayer, Legend) {
-    var template = {
-      title: "{BusName}",
-      content: "{Description}"
-    };
-    //add bus routes
-    var featureLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BusStops/FeatureServer/0",
-      outFields: ["BusName", "StopLocation", "Description"],
-      popupTemplate: template
-    });
-    map.add(featureLayer);
-    featureLayerIDSet.push(featureLayer.id);
-    //add bycicle ParkingLayers
-    var bikeLayer = new FeatureLayer({
-      url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BicycleParking/FeatureServer/0"
-    });
-    map.add(bikeLayer);
-    featureLayerIDSet.push(bikeLayer.id);
-    legend = new Legend({
-      view: view,
-      layerInfos: [{
-        layer: featureLayer,
-        bikeLayer
-      }]
-    });
-    view.ui.add(legend, "top-left");
   });
 }
 
@@ -431,12 +395,12 @@ function toggleAEDs() {
     //
     // });
   });
-  //var json = "https://risk.byu.edu/ws/aedfeed.php"
 }
 
 function removeLayers() {
   console.log("removing layers");
   document.getElementById("listNode").innerHTML = "";
+  view.popup.close();
   //document.getElementsByClassName("panel-side")[0].style.zIndex = "-1";
   if (layerList != null) {
     layerList.destroy();
