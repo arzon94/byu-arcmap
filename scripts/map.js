@@ -9,8 +9,9 @@ function initialize() {
     "esri/views/MapView",
     "esri/layers/FeatureLayer",
     "esri/widgets/Search",
+    "esri/widgets/Home",
     "dojo/domReady!"
-  ], function(Map, MapView, FeatureLayer, Search) {
+  ], function(Map, MapView, FeatureLayer, Search, Home) {
     map = new Map({
       //  Unable to find basemap definition for: dark-grays. Try one of these: "streets", "satellite", "hybrid", "terrain", "topo", "gray", "dark-gray", "oceans", "national-geographic", "osm", "dark-gray-vector", "gray-vector", "streets-vector", "topo-vector", "streets-night-vector", "streets-relief-vector", "streets-navigation-vector"
       basemap: "topo"
@@ -91,11 +92,16 @@ function initialize() {
             }
           ]
         });
+
         view.ui.add(searchWidget, {
           position: "top-left",
           index: 2
         });
-        view.ui.move( "zoom", "top-left");
+        view.ui.move("zoom", "top-left");
+        var homeWidget = new Home({
+          view: view
+        });
+        view.ui.add(homeWidget, "top-left");
         view.popup.dockEnabled = false;
         searchWidget.then(function() {
 
@@ -126,7 +132,7 @@ function toggleLayers(id) {
       title: "{Name}",
       content: [{
         type: "text",
-        text: "<div class='popupText'>{Description}</div>  <img src='{ImageUrl}'> <a target='_blank' href='{url}'>{url}</a>"
+        text: "<img src='{ImageUrl}'><div class='popupText'>{Description}</div>   <a target='_blank' href='{url}'>{url}</a>"
       }]
 
     };
@@ -240,14 +246,13 @@ function toggleLegendLayers(id) {
       content: "{Description} {StopLocati}"
     };
     var featureLayer;
-    if (id === "ComputerLabs_Merge" || id==="Transportaion_Merge") {
+    if (id === "ComputerLabs_Merge" || id === "Transportaion_Merge") {
       featureLayer = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
         outFields: ["Name", "Description", "StopLocati"],
         popupTemplate: template
       });
-    }
-    else {
+    } else {
       featureLayer = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0"
       });

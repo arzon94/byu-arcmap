@@ -83,14 +83,13 @@ byu-footer {
   color: #002E5D;
 }
 .esri-view-width-large .esri-popup__main-container, .esri-view-width-medium .esri-popup__main-container, .esri-popup__main-container{
-  width: 600px;
+  width: 500px;
+  max-height: 250px;
 }
 .esri-popup-renderer img{
   float: right;
 }
 .popupText{
-  float: left;
-  width: 350px;
 }
 @media screen and (max-width: 600px) {
   .panel-side {
