@@ -20,10 +20,12 @@ function initialize() {
       container: "viewDiv",
       map: map,
       center: [-111.649278, 40.249251],
-      zoom: 16
+      zoom: 16,
+
     });
     view.then(function() {
-        toggleBuildings();
+      toggleBuildings();
+
         var template = {
           title: "{Name}",
           content: "{Description}",
