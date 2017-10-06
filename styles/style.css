@@ -71,9 +71,11 @@ html, body {
   color: #84DCB4;
   background-color: rgba(0, 0, 0, 0.75);
 }
-.esri-layer-list{
+
+.esri-ui-corner .esri-widget--panel {
   width: unset;
 }
+
 byu-footer {
   z-index: 5;
 }
@@ -82,15 +84,26 @@ byu-footer {
   background-color: transparent;
   color: #002E5D;
 }
-.esri-view-width-large .esri-popup__main-container, .esri-view-width-medium .esri-popup__main-container, .esri-popup__main-container{
+
+.esri-view-width-large .esri-popup__main-container, .esri-view-width-medium .esri-popup__main-container, .esri-popup__main-container {
   width: 500px;
   max-height: 250px;
 }
-.esri-popup-renderer img{
+
+.esri-popup-renderer img {
   float: right;
 }
-.popupText{
+
+.orange {
+  color: rgba(255, 165, 0, 255);
 }
+
+.popupText {}
+
+.esri-layer-list__item-toggle-icon, .esri-layer-list__item-title {
+  color: white;
+}
+
 @media screen and (max-width: 600px) {
   .panel-side {
     width: 100%;
