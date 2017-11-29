@@ -94,10 +94,6 @@ byu-footer {
   float: right;
 }
 
-.orange {
-  color: rgba(255, 165, 0, 255);
-}
-
 .popupText {}
 
 .esri-layer-list__item-toggle-icon, .esri-layer-list__item-title {
