@@ -123,7 +123,7 @@ function toggleLayers(id) {
       content: [
         {
           type: "text",
-          text: "<img src='{ImageUrl}'><div class='popupText'>{Description}</div>   <a target='_blank' href='{url}'>{url}</a>"
+          text: "<img src='{ImageUrl}'><div class='popupText'>{Description}</div>   <a target='_blank' href={url}>{url}</a>"
         }
       ]
 
@@ -234,17 +234,15 @@ function toggleLegendLayers(id) {
       content: "{Description} {StopLocati}"
     };
     var featureLayer;
-    if (id === "ComputerLabs_Merge" || id === "Transportaion_Merge") {
+    if (id === "AccessibilityRoutes") {
       featureLayer = new FeatureLayer({
-        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
-        outFields: [
-          "Name", "Description", "StopLocati"
-        ],
-        popupTemplate: template
+        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0"
       });
     } else {
       featureLayer = new FeatureLayer({
-        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0"
+        url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + id + "/FeatureServer/0",
+        outFields: ["*"],
+        popupTemplate: template
       });
     }
     map.add(featureLayer);
@@ -377,20 +375,20 @@ function toggleAEDs() {
   require([
     "esri/layers/FeatureLayer",
     "esri/request",
-    "esri/config",
     "esri/geometry/Point",
     "esri/widgets/Legend",
+    "esri/config",
     "dojo/domReady!"
-  ], function(FeatureLayer, esriRequest, esriConfig, Point, Legend) {
+  ], function(FeatureLayer, esriRequest, Point, Legend, esriConfig) {
     var aedurl = "https://risk.byu.edu/ws/aedfeed.php";
-
+    esriConfig.request.corsEnabledServers.push("https://risk.byu.edu/");
     getData().then(createGraphics). // then send it to the createGraphics() method
     then(createLayer). // when graphics are created, create the layer
     otherwise(errback);
     //attempt to access the aedlive feed. if not, return the local aedfeed.json
     function getData() {
       return esriRequest(aedurl).then(function(response) {
-        console.log("response");
+        //console.log(response);
         return response;
       }).otherwise(function(error) {
         console.log('request failed, grabbing local feed');
