@@ -309,6 +309,8 @@ function toggleParkingLots() {
       "RestrictedVisitor",
       "Construction",
       "StudentHousing",
+      "HeritageHalls",
+      "HelamanHalls",
       "FreeParking",
       "VisitorParking",
       "TimedParking",
@@ -316,7 +318,7 @@ function toggleParkingLots() {
       "FacultyandStaff"
     ];
     var featureLayerArray = [];
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 12; i++) {
       featureLayerArray[i] = new FeatureLayer({
         url: "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/" + parkingLotsArrayNames[i] + "/FeatureServer/0",
         outFields: [
