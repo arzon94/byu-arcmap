@@ -309,13 +309,13 @@ function toggleParkingLots() {
       "RestrictedVisitor",
       "Construction",
       "StudentHousing",
-      "HeritageHalls",
-      "HelamanHalls",
       "FreeParking",
       "VisitorParking",
       "TimedParking",
       "GraduateStudents",
-      "FacultyandStaff"
+      "FacultyandStaff",
+      "HeritageHalls",
+      "HelamanHalls"
     ];
     var featureLayerArray = [];
     for (var i = 0; i < 12; i++) {
