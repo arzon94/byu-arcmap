@@ -304,6 +304,8 @@ function toggleParkingLots() {
       content: "{Description}"
     };
     var parkingLotsArrayNames = [
+      "HeritageHalls",
+      "HelamanHalls",
       "MotorcycleParking",
       "Students",
       "RestrictedVisitor",
@@ -313,9 +315,7 @@ function toggleParkingLots() {
       "VisitorParking",
       "TimedParking",
       "GraduateStudents",
-      "FacultyandStaff",
-      "HeritageHalls",
-      "HelamanHalls"
+      "FacultyandStaff"
     ];
     var featureLayerArray = [];
     for (var i = 0; i < 12; i++) {
@@ -359,6 +359,10 @@ function toggleParkingLots() {
               item.title = "Visitor Parking";
             } else if (item.title === "GraduateStudents") {
               item.title = "Graduate Students";
+            } else if (item.title === "HeritageHalls") {
+              item.title = "Heritage Halls";
+            } else if (item.title === "HelamanHalls") {
+              item.title = "Helaman Halls";
             } else if (item.title === "Students") {
               node.children[0].children[0].children[1].style.color = "unset";
             }
