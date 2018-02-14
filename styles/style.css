@@ -87,7 +87,8 @@ byu-footer {
 
 .esri-view-width-large .esri-popup__main-container, .esri-view-width-medium .esri-popup__main-container, .esri-popup__main-container {
   width: 500px;
-  max-height: 250px;
+  max-height: 450px; /*DAVIS*/
+
 }
 
 .esri-popup-renderer img {
@@ -109,7 +110,7 @@ byu-footer {
   }
   byu-footer {
     z-index: -1;
-    position: fixed;
+    /* position: fixed; */
   }
   .esri-view-height-small .esri-ui-corner .esri-layer-list {
     max-height: 150px;
